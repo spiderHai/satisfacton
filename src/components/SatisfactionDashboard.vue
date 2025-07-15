@@ -47,35 +47,167 @@
       </a-row>
     </a-card>
 
+    <!-- 概览指标卡片 -->
+    <a-row :gutter="16" class="overview-row">
+      <a-col :span="4">
+        <a-card class="overview-card">
+          <template #title>
+            <div class="card-title">
+              <span>客户满意度</span>
+              <a-tag color="#52c41a">核心指标</a-tag>
+            </div>
+          </template>
+          <a-statistic
+            :value="85.6"
+            :precision="1"
+            suffix="分"
+            :value-style="{ color: '#52c41a', fontSize: '24px' }"
+          />
+          <div class="trend-info">
+            <span>同比</span>
+            <a-statistic
+              :value="3.2"
+              :precision="1"
+              suffix="%"
+              :value-style="{ color: '#3f8600', fontSize: '14px' }"
+              :prefix="renderUpIcon()"
+            />
+          </div>
+        </a-card>
+      </a-col>
+      <a-col :span="4">
+        <a-card class="overview-card">
+          <template #title>
+            <div class="card-title">
+              <span>月度投诉数</span>
+            </div>
+          </template>
+          <a-statistic
+            :value="35"
+            :value-style="{ color: '#faad14', fontSize: '24px' }"
+          />
+          <div class="trend-info">
+            <span>环比</span>
+            <a-statistic
+              :value="16.7"
+              :precision="1"
+              suffix="%"
+              :value-style="{ color: '#cf1322', fontSize: '14px' }"
+              :prefix="renderDownIcon()"
+            />
+          </div>
+        </a-card>
+      </a-col>
+      <a-col :span="4">
+        <a-card class="overview-card">
+          <template #title>
+            <div class="card-title">
+              <span>投诉解决率</span>
+            </div>
+          </template>
+          <a-statistic
+            :value="94.3"
+            :precision="1"
+            suffix="%"
+            :value-style="{ color: '#1890ff', fontSize: '24px' }"
+          />
+          <div class="trend-info">
+            <span>环比</span>
+            <a-statistic
+              :value="2.5"
+              :precision="1"
+              suffix="%"
+              :value-style="{ color: '#3f8600', fontSize: '14px' }"
+              :prefix="renderUpIcon()"
+            />
+          </div>
+        </a-card>
+      </a-col>
+      <a-col :span="4">
+        <a-card class="overview-card">
+          <template #title>
+            <div class="card-title">
+              <span>平均响应时间</span>
+            </div>
+          </template>
+          <a-statistic
+            :value="2.5"
+            :precision="1"
+            suffix="小时"
+            :value-style="{ color: '#52c41a', fontSize: '24px' }"
+          />
+          <div class="trend-info">
+            <span>环比</span>
+            <a-statistic
+              :value="12.3"
+              :precision="1"
+              suffix="%"
+              :value-style="{ color: '#3f8600', fontSize: '14px' }"
+              :prefix="renderUpIcon()"
+            />
+            <span class="trend-desc">响应更快</span>
+          </div>
+        </a-card>
+      </a-col>
+      <a-col :span="4">
+        <a-card class="overview-card">
+          <template #title>
+            <div class="card-title">
+              <span>退货率</span>
+            </div>
+          </template>
+          <a-statistic
+            :value="1.2"
+            :precision="1"
+            suffix="%"
+            :value-style="{ color: '#52c41a', fontSize: '24px' }"
+          />
+          <div class="trend-info">
+            <span>环比</span>
+            <a-statistic
+              :value="0.3"
+              :precision="1"
+              suffix="%"
+              :value-style="{ color: '#3f8600', fontSize: '14px' }"
+              :prefix="renderDownIcon()"
+            />
+            <span class="trend-desc">退货减少</span>
+          </div>
+        </a-card>
+      </a-col>
+      <a-col :span="4">
+        <a-card class="overview-card">
+          <template #title>
+            <div class="card-title">
+              <span>重复投诉率</span>
+            </div>
+          </template>
+          <a-statistic
+            :value="3.8"
+            :precision="1"
+            suffix="%"
+            :value-style="{ color: '#faad14', fontSize: '24px' }"
+          />
+          <div class="trend-info">
+            <span>环比</span>
+            <a-statistic
+              :value="1.5"
+              :precision="1"
+              suffix="%"
+              :value-style="{ color: '#cf1322', fontSize: '14px' }"
+              :prefix="renderUpIcon()"
+            />
+            <span class="trend-desc trend-warning">需关注</span>
+          </div>
+        </a-card>
+      </a-col>
+    </a-row>
+
     <!-- 核心指标看板 -->
     <a-row :gutter="16" class="stats-row">
       <a-col :span="8">
-        <a-card class="metric-card">
-          <template #title>当月平均满意度</template>
-          <a-statistic
-            :value="overallSatisfaction"
-            :precision="1"
-            suffix="分"
-            style="font-weight: bold"
-            :value-style="{
-              color: getSatisfactionColor(overallSatisfaction),
-              fontSize: '32px',
-            }"
-          />
-          <div class="trend-indicator">
-            <span>环比</span>
-            <a-statistic
-              :value="satisfactionChange"
-              :precision="2"
-              suffix="%"
-              :value-style="{
-                color: satisfactionChange >= 0 ? '#3f8600' : '#cf1322',
-              }"
-              :prefix="
-                satisfactionChange >= 0 ? renderUpIcon() : renderDownIcon()
-              "
-            />
-          </div>
+        <a-card class="chart-card" title="月度投诉趋势">
+          <div ref="miniComplaintTrendChart" style="height: 250px"></div>
         </a-card>
       </a-col>
       <a-col :span="8">
@@ -84,8 +216,16 @@
         </a-card>
       </a-col>
       <a-col :span="8">
-        <a-card class="chart-card" title="投诉等级分布">
-          <div ref="complaintLevelChart" style="height: 250px"></div>
+        <a-card class="chart-card" title="月客诉件数">
+          <div class="complaint-header">
+            <a-range-picker
+              v-model:value="complaintDateRange"
+              format="YYYY-MM"
+              :placeholder="['开始月份', '结束月份']"
+              picker="month"
+            />
+            <div ref="complaintLevelChart" style="height: 250px"></div>
+          </div>
         </a-card>
       </a-col>
     </a-row>
@@ -101,17 +241,18 @@
         <a-card class="chart-card" title="客户满意度分布">
           <div class="chart-filter-wrapper">
             <a-select
-              v-model:value="selectedDeptForChart"
+              v-model:value="selectedCustomerTypeForChart"
               style="width: 200px; margin-bottom: 15px"
-              placeholder="请选择部门"
+              placeholder="请选择客户类型"
               @change="updateCustomerSatisfactionChart"
             >
+              <a-select-option value="">全部客户</a-select-option>
               <a-select-option
-                v-for="dept in departmentOptions"
-                :key="dept.value"
-                :value="dept.value"
+                v-for="type in customerTypeOptions"
+                :key="type.value"
+                :value="type.value"
               >
-                {{ dept.title }}
+                {{ type.label }}
               </a-select-option>
             </a-select>
           </div>
@@ -119,15 +260,8 @@
         </a-card>
       </a-col>
       <a-col :xs="24" :sm="24" :md="8" :lg="8">
-        <a-card class="chart-card" title="月客诉件数">
-          <a-tabs default-active-key="trend">
-            <a-tab-pane key="trend" tab="投诉趋势">
-              <div ref="complaintTrendChart" style="height: 320px"></div>
-            </a-tab-pane>
-            <a-tab-pane key="level" tab="等级分布">
-              <div ref="complaintLevelMonthlyChart" style="height: 320px"></div>
-            </a-tab-pane>
-          </a-tabs>
+        <a-card class="chart-card" title="投诉等级分布">
+          <div ref="complaintLevelMonthlyChart" style="height: 320px"></div>
         </a-card>
       </a-col>
     </a-row>
@@ -172,6 +306,10 @@ import {
 // 渲染图标
 const renderUpIcon = () => h(ArrowUpOutlined);
 const renderDownIcon = () => h(ArrowDownOutlined);
+const complaintDateRange = ref<[Dayjs, Dayjs]>([
+  dayjs().subtract(5, "month"),
+  dayjs(),
+]);
 const returnsDateRange = ref<[Dayjs, Dayjs]>([
   dayjs().subtract(5, "month"),
   dayjs(),
@@ -309,10 +447,29 @@ const resetFilters = () => {
   selectedCustomers.value = [];
 };
 
+// 添加到现有的 ref 声明部分
+const miniComplaintTrendChart = ref<HTMLElement | null>(null);
+
+// 在 initCharts 函数中添加以下初始化代码
+// 迷你投诉趋势图
+
 // 客户满意度图表所选部门
 const selectedDeptForChart = ref("");
 
 // 更新客户满意度图表
+// 添加客户类型选项
+const customerTypeOptions = [
+  { value: "automobile", label: "汽车制造商" },
+  { value: "electronics", label: "电子产品厂商" },
+  { value: "smartphone", label: "智能手机厂商" },
+  { value: "optics", label: "光学设备厂商" },
+  { value: "industrial", label: "工业制造商" },
+];
+
+// 将 selectedDeptForChart 改为 selectedCustomerTypeForChart
+const selectedCustomerTypeForChart = ref("");
+
+// 更新客户满意度图表函数
 const updateCustomerSatisfactionChart = () => {
   if (!customerSatisfactionRadar.value) return;
 
@@ -321,72 +478,98 @@ const updateCustomerSatisfactionChart = () => {
     echarts.init(customerSatisfactionRadar.value);
   chart.clear(); // 确保清除旧图表
 
-  // 如果未选择部门，显示雷达图
-  if (!selectedDeptForChart.value) {
-    chart.setOption({
-      tooltip: {},
-      legend: {
-        data: ["阿里巴巴", "腾讯", "百度", "京东", "华为"],
-      },
-      radar: {
-        indicator: [
-          { name: "响应速度", max: 100 },
-          { name: "专业度", max: 100 },
-          { name: "解决效率", max: 100 },
-          { name: "服务态度", max: 100 },
-          { name: "整体满意度", max: 100 },
+  // 构建雷达图数据
+  let radarData = [];
+  let legendData = [];
+
+  // 根据是否选择客户类型来过滤客户数据
+  if (selectedCustomerTypeForChart.value) {
+    // 根据选择的客户类型获取对应的客户满意度数据
+    const customersByType = {
+      automobile: ["上汽集团", "一汽集团", "比亚迪"],
+      electronics: ["华为", "小米", "海信"],
+      smartphone: ["OPPO", "VIVO", "三星"],
+      optics: ["蔡司", "尼康", "佳能"],
+      industrial: ["西门子", "ABB", "三菱电机"],
+    };
+
+    const selectedCustomers =
+      customersByType[selectedCustomerTypeForChart.value] || [];
+
+    // 为每个客户生成雷达图数据
+    selectedCustomers.forEach((customer) => {
+      legendData.push(customer);
+      // 生成一些随机数据
+      const baseScore = 75 + Math.floor(Math.random() * 15);
+      radarData.push({
+        name: customer,
+        value: [
+          baseScore + Math.floor(Math.random() * 10) - 5, // 响应速度
+          baseScore + Math.floor(Math.random() * 10) - 5, // 专业度
+          baseScore + Math.floor(Math.random() * 10) - 5, // 解决效率
+          baseScore + Math.floor(Math.random() * 10) - 5, // 服务态度
+          baseScore, // 整体满意度
         ],
-      },
-      series: [
-        {
-          type: "radar",
-          data: [
-            { value: [90, 85, 88, 92, 89], name: "阿里巴巴" },
-            { value: [85, 90, 80, 88, 84], name: "腾讯" },
-            { value: [78, 82, 85, 80, 81], name: "百度" },
-            { value: [82, 80, 75, 90, 82], name: "京东" },
-            { value: [92, 88, 90, 86, 90], name: "华为" },
-          ],
-        },
-      ],
+      });
     });
-    return;
+  } else {
+    // 使用默认的代表性客户数据
+    legendData = ["华为", "上汽集团", "小米", "比亚迪", "西门子"];
+    radarData = [
+      { value: [92, 88, 90, 86, 90], name: "华为" },
+      { value: [85, 90, 80, 88, 84], name: "上汽集团" },
+      { value: [78, 82, 85, 80, 81], name: "小米" },
+      { value: [82, 80, 75, 90, 82], name: "比亚迪" },
+      { value: [88, 85, 87, 84, 86], name: "西门子" },
+    ];
   }
 
-  // 获取选中部门对应的模拟数据
-  const { customerScores } = getDeptCustomerSatisfactionData(
-    selectedDeptForChart.value
-  );
-
-  // 准备柱状图数据
-  const customers = Object.keys(customerScores);
-  const scores = customers.map((customer) => customerScores[customer].score);
-
-  // 设置柱状图
+  // 设置雷达图配置
   chart.setOption({
-    title: {
-      text: `${getDepartmentName(selectedDeptForChart.value)}客户满意度`,
-      left: "center",
+    title: selectedCustomerTypeForChart.value
+      ? {
+          text: `${getCustomerTypeLabel(
+            selectedCustomerTypeForChart.value
+          )}客户满意度`,
+          left: "center",
+        }
+      : null,
+    tooltip: {},
+    legend: {
+      data: legendData,
+      type: "scroll",
+      bottom: 0,
     },
-    tooltip: { trigger: "axis" },
-    legend: { show: false },
-    xAxis: { type: "category", data: customers },
-    yAxis: { type: "value", min: 0, max: 100, name: "满意度" },
+    radar: {
+      indicator: [
+        { name: "响应速度", max: 100 },
+        { name: "专业度", max: 100 },
+        { name: "解决效率", max: 100 },
+        { name: "服务态度", max: 100 },
+        { name: "整体满意度", max: 100 },
+      ],
+    },
     series: [
       {
-        data: scores.map((score) => ({
-          value: score,
-          itemStyle: { color: getSatisfactionColor(score) },
-        })),
-        type: "bar",
-        label: {
-          show: true,
-          position: "top",
-          formatter: "{c}分",
+        type: "radar",
+        data: radarData,
+        lineStyle: {
+          width: 2,
+        },
+        emphasis: {
+          lineStyle: {
+            width: 4,
+          },
         },
       },
     ],
   });
+};
+
+// 根据客户类型ID获取客户类型名称
+const getCustomerTypeLabel = (typeId) => {
+  const type = customerTypeOptions.find((t) => t.value === typeId);
+  return type ? type.label : "未知客户类型";
 };
 
 // 根据部门ID获取部门名称
@@ -404,6 +587,90 @@ const getDepartmentName = (deptId: string): string => {
 
 // 初始化图表
 const initCharts = () => {
+  if (miniComplaintTrendChart.value) {
+    const chart = echarts.init(miniComplaintTrendChart.value);
+    const months = [
+      "2023-12",
+      "2024-01",
+      "2024-02",
+      "2024-03",
+      "2024-04",
+      "2024-05",
+    ];
+    const complaints = [42, 38, 45, 40, 36, 35];
+
+    // 计算环比变化
+    const changes = [null];
+    for (let i = 1; i < complaints.length; i++) {
+      const change = (
+        ((complaints[i] - complaints[i - 1]) / complaints[i - 1]) *
+        100
+      ).toFixed(1);
+      changes.push(parseFloat(change));
+    }
+
+    chart.setOption({
+      tooltip: {
+        trigger: "axis",
+        axisPointer: { type: "shadow" },
+      },
+      grid: {
+        top: "15%",
+        left: "3%",
+        right: "3%",
+        bottom: "10%",
+        containLabel: true,
+      },
+      xAxis: {
+        type: "category",
+        data: months,
+        axisLine: { lineStyle: { color: "#f0f0f0" } },
+        axisLabel: { fontSize: 10 },
+      },
+      yAxis: [
+        {
+          type: "value",
+          name: "投诉数",
+          nameTextStyle: { fontSize: 10 },
+          axisLabel: { fontSize: 10 },
+          splitLine: { lineStyle: { type: "dashed" } },
+        },
+        {
+          type: "value",
+          name: "环比",
+          nameTextStyle: { fontSize: 10 },
+          axisLabel: {
+            fontSize: 10,
+            formatter: "{value}%",
+          },
+          splitLine: { show: false },
+        },
+      ],
+      series: [
+        {
+          name: "投诉数量",
+          type: "bar",
+          data: complaints,
+          barWidth: "40%",
+          itemStyle: { color: "#faad14" },
+        },
+        {
+          name: "环比变化",
+          type: "line",
+          yAxisIndex: 1,
+          data: changes,
+          symbol: "circle",
+          symbolSize: 6,
+          lineStyle: { width: 2 },
+          itemStyle: {
+            color: function (params) {
+              return params.value >= 0 ? "#cf1322" : "#52c41a";
+            },
+          },
+        },
+      ],
+    });
+  }
   // 满意度趋势图
   if (satisfactionTrendChart.value) {
     const chart = echarts.init(satisfactionTrendChart.value);
@@ -686,6 +953,7 @@ onMounted(() => {
       complaintTrendChart.value,
       customerSatisfactionRadar.value,
       complaintLevelMonthlyChart.value,
+      miniComplaintTrendChart.value,
     ];
 
     charts.forEach((chartEl) => {
@@ -705,6 +973,57 @@ onMounted(() => {
 
 .filter-card {
   margin-bottom: 20px;
+}
+
+.overview-row {
+  margin-bottom: 20px;
+}
+
+.overview-card {
+  height: 100%;
+  border-radius: 4px;
+}
+
+.overview-card :deep(.ant-card-head) {
+  min-height: 36px;
+  padding: 0 12px;
+  border-bottom: 0;
+}
+
+.overview-card :deep(.ant-card-head-title) {
+  padding: 8px 0;
+}
+
+.overview-card :deep(.ant-card-body) {
+  padding: 12px;
+}
+
+.card-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 14px;
+}
+
+.trend-info {
+  display: flex;
+  align-items: center;
+  margin-top: 8px;
+  font-size: 12px;
+  color: rgba(0, 0, 0, 0.45);
+}
+
+.trend-info span {
+  margin-right: 4px;
+}
+
+.trend-desc {
+  margin-left: 8px;
+  color: #3f8600;
+}
+
+.trend-warning {
+  color: #cf1322;
 }
 
 .stats-row {
@@ -770,5 +1089,16 @@ onMounted(() => {
 /* 可能需要添加一些额外的样式 */
 .chart-card {
   height: 100%;
+}
+
+/* 添加到现有的 <style scoped> 部分 */
+.complaint-trend-card :deep(.ant-card-body) {
+  padding: 0 12px 12px;
+}
+
+.complaint-trend-card .chart-title {
+  font-size: 12px;
+  color: rgba(0, 0, 0, 0.45);
+  margin-bottom: 4px;
 }
 </style>
