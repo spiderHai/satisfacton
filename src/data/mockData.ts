@@ -1,3 +1,5 @@
+import dayjs, { Dayjs } from "dayjs";
+
 // 部门选项数据
 export const departmentOptions = [
   {
@@ -73,7 +75,7 @@ export const complaintData = [
     owner: "张三",
     complaintId: "CP20231001",
     customer: "阿里巴巴",
-    productModel: "车载镜头-南昌",
+    productModel: "aa",
     deliveryDate: "2023-10-01",
     importantOccur: "是",
     defectRate: "5%",
@@ -92,7 +94,7 @@ export const complaintData = [
     owner: "李四",
     complaintId: "CP20231005",
     customer: "腾讯",
-    productModel: "车载镜头-合肥",
+    productModel: "bb",
     deliveryDate: "2023-10-05",
     importantOccur: "否",
     defectRate: "10%",
@@ -111,7 +113,7 @@ export const complaintData = [
     owner: "王五",
     complaintId: "CP20231010",
     customer: "百度",
-    productModel: "车载镜头-越南",
+    productModel: "cc",
     deliveryDate: "2023-10-10",
     importantOccur: "是",
     defectRate: "15%",
@@ -130,7 +132,7 @@ export const complaintData = [
     owner: "赵六",
     complaintId: "CP20231015",
     customer: "京东",
-    productModel: "车载模组-合肥",
+    productModel: "dd",
     deliveryDate: "2023-10-15",
     importantOccur: "否",
     defectRate: "20%",
@@ -149,7 +151,7 @@ export const complaintData = [
     owner: "孙七",
     complaintId: "CP20231020",
     customer: "华为",
-    productModel: "CA003-南昌",
+    productModel: "ee",
     deliveryDate: "2023-10-20",
     importantOccur: "是",
     defectRate: "25%",
@@ -169,7 +171,7 @@ export const complaintData = [
     owner: "周八",
     complaintId: "CP20231025",
     customer: "小米",
-    productModel: "手机镜头-main",
+    productModel: "ff",
     deliveryDate: "2023-10-25",
     importantOccur: "是",
     defectRate: "8%",
@@ -188,7 +190,7 @@ export const complaintData = [
     owner: "吴九",
     complaintId: "CP20231101",
     customer: "阿里巴巴",
-    productModel: "手机模组-main",
+    productModel: "gg",
     deliveryDate: "2023-11-01",
     importantOccur: "否",
     defectRate: "12%",
@@ -383,75 +385,62 @@ export function getDeptCustomerSatisfactionData(deptId: string) {
   );
 }
 
-// 退货数据模拟
-export const mockReturnData = {
-  // 按月份的退货数量
-  returnDataByMonth: {
-    "2023-05": 52,
-    "2023-06": 67,
-    "2023-07": 58,
-    "2023-08": 43,
-    "2023-09": 49,
-    "2023-10": 38,
-  },
+// 获取退货数据
+export const getReturnData = (dateRange: [Dayjs, Dayjs]) => {
+  // 生成日期范围内的所有月份
+  const dates = [];
+  const currentDate = dayjs(dateRange[0]);
+  const endDate = dayjs(dateRange[1]);
 
-  // 按部门的退货数量（每月）
-  returnDataByDept: {
-    "车载镜头-南昌": {
-      "2023-05": 12,
-      "2023-06": 15,
-      "2023-07": 13,
-      "2023-08": 9,
-      "2023-09": 11,
-      "2023-10": 8,
-    },
-    "车载镜头-合肥": {
-      "2023-05": 8,
-      "2023-06": 10,
-      "2023-07": 9,
-      "2023-08": 7,
-      "2023-09": 8,
-      "2023-10": 6,
-    },
-    "车载镜头-越南": {
-      "2023-05": 6,
-      "2023-06": 8,
-      "2023-07": 7,
-      "2023-08": 5,
-      "2023-09": 6,
-      "2023-10": 5,
-    },
-    "车载模组-合肥": {
-      "2023-05": 10,
-      "2023-06": 12,
-      "2023-07": 11,
-      "2023-08": 8,
-      "2023-09": 9,
-      "2023-10": 7,
-    },
-    "CA003-南昌": {
-      "2023-05": 7,
-      "2023-06": 9,
-      "2023-07": 8,
-      "2023-08": 6,
-      "2023-09": 7,
-      "2023-10": 5,
-    },
-    "CA003-墨西哥": {
-      "2023-05": 5,
-      "2023-06": 7,
-      "2023-07": 6,
-      "2023-08": 4,
-      "2023-09": 5,
-      "2023-10": 4,
-    },
-    手机镜头: {
-      "2023-05": 4,
-      "2023-06": 6,
-      "2023-07": 4,
-      "2023-08": 4,
-      "2023-09": 3,
-      "2023-10": 3,
-    },
-  },
+  while (
+    currentDate.isBefore(endDate) ||
+    currentDate.isSame(endDate, "month")
+  ) {
+    dates.push(currentDate.format("YYYY-MM"));
+    currentDate.add(1, "month");
+  }
+
+  // 部门列表
+  const departments = ["销售部", "技术部", "客服部", "财务部"];
+
+  // 为每个部门生成随机退货数据
+  const data = departments.map(() => {
+    return dates.map(() => Math.floor(Math.random() * 50) + 10); // 10-60 的随机数
+  });
+
+  return { dates, departments, data };
+};
+
+// 为特定部门的月度退货数据
+export const getDepartmentReturnsByMonth = (
+  department: string,
+  month: string
+) => {
+  // 随机生成数据
+  return Math.floor(Math.random() * 50) + 10;
+};
+
+// 月度总退货数据
+export const getTotalReturnsByMonth = (month: string) => {
+  const departments = ["销售部", "技术部", "客服部", "财务部"];
+  return departments.reduce(
+    (total, dept) => total + getDepartmentReturnsByMonth(dept, month),
+    0
+  );
+};
+
+// 最近几个月的总退货数据趋势
+export const getReturnsMonthlyTrend = (months: number = 6) => {
+  const data = [];
+  const currentMonth = dayjs();
+
+  for (let i = months - 1; i >= 0; i--) {
+    const month = currentMonth.subtract(i, "month").format("YYYY-MM");
+    data.push({
+      month,
+      returns: getTotalReturnsByMonth(month),
+    });
+  }
+
+  return data;
 };

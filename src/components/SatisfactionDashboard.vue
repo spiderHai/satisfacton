@@ -132,7 +132,63 @@
         </a-card>
       </a-col>
     </a-row>
-
+    <!-- 退货数据统计区 -->
+    <a-card class="returns-card" title="退货数据统计" :bordered="false">
+      <div class="returns-header">
+        <a-statistic
+          title="总体退货数"
+          :value="totalReturns"
+          style="margin-bottom: 20px"
+        >
+          <template #suffix>
+            <span style="font-size: 16px">件</span>
+          </template>
+        </a-statistic>
+        <a-range-picker
+          v-model:value="returnsDateRange"
+          format="YYYY-MM"
+          :placeholder="['开始月份', '结束月份']"
+          @change="updateReturnsData"
+          style="margin-bottom: 20px"
+        />
+      </div>
+      <a-divider style="margin: 16px 0" />
+      <a-row :gutter="[16, 16]">
+        <a-col
+          :xs="24"
+          :sm="12"
+          :md="8"
+          :lg="6"
+          v-for="dept in topDepartments"
+          :key="dept.value"
+        >
+          <a-card bordered>
+            <a-statistic
+              :title="dept.title"
+              :value="getDepartmentReturns(dept.value)"
+              :value-style="{ color: getDepartmentColor(dept.value) }"
+            >
+              <template #suffix>
+                <span>件</span>
+              </template>
+            </a-statistic>
+            <div
+              v-if="dept.children && dept.children.length > 0"
+              class="sub-dept-stats"
+            >
+              <div
+                v-for="child in dept.children"
+                :key="child.value"
+                class="sub-dept-item"
+              >
+                <span>{{ child.title }}: </span>
+                <span>{{ getSubDepartmentReturns(child.value) }}件</span>
+              </div>
+            </div>
+          </a-card>
+        </a-col>
+      </a-row>
+    </a-card>
     <!-- 投诉详情表格区 -->
     <a-card class="detail-card" title="投诉详情列表">
       <ComplaintDetailTable
@@ -155,19 +211,63 @@ import {
   departmentOptions,
   customerOptions,
   complaintData,
+  getReturnData,
+  getTotalReturnsByMonth,
+  getDepartmentReturnsByMonth,
 } from "../data/mockData";
 
 // 渲染图标
 const renderUpIcon = () => h(ArrowUpOutlined);
 const renderDownIcon = () => h(ArrowDownOutlined);
-
+const returnsDateRange = ref<[Dayjs, Dayjs]>([
+  dayjs().subtract(5, "month"),
+  dayjs(),
+]);
+const totalReturns = ref(1284);
+const departmentReturns = reactive({});
+const topDepartments = ref(departmentOptions);
 // 满意度颜色标识
 const getSatisfactionColor = (score: number) => {
   if (score >= 80) return "#52c41a";
   if (score >= 60) return "#faad14";
   return "#ff4d4f";
 };
+const updateReturnsData = () => {
+  if (!returnsDateRange.value) return;
 
+  // 计算总退货数
+  let total = 0;
+  for (let i = 0; i < topDepartments.value.length; i++) {
+    const dept = topDepartments.value[i];
+    const deptReturns = Math.floor(Math.random() * 300) + 100; // 模拟数据
+    departmentReturns[dept.value] = deptReturns;
+    total += deptReturns;
+
+    // 为子部门生成数据
+    if (dept.children && dept.children.length > 0) {
+      let subTotal = 0;
+      dept.children.forEach((child) => {
+        const childReturns = Math.floor(
+          deptReturns * (Math.random() * 0.5 + 0.1)
+        ); // 子部门占比10%-60%
+        departmentReturns[child.value] = childReturns;
+        subTotal += childReturns;
+      });
+
+      // 调整以确保子部门总和不超过父部门
+      if (subTotal > deptReturns) {
+        const ratio = deptReturns / subTotal;
+        dept.children.forEach((child) => {
+          departmentReturns[child.value] = Math.floor(
+            departmentReturns[child.value] * ratio
+          );
+        });
+      }
+    }
+  }
+
+  totalReturns.value = total;
+};
 // 投诉等级颜色
 const getComplaintLevelColor = (level: string) => {
   const colorMap: Record<string, string> = {
@@ -179,7 +279,32 @@ const getComplaintLevelColor = (level: string) => {
   };
   return colorMap[level] || "#bfbfbf";
 };
+const getDepartmentReturns = (deptValue: string) => {
+  return departmentReturns[deptValue] || 0;
+};
 
+// 获取子部门退货数
+const getSubDepartmentReturns = (deptValue: string) => {
+  return departmentReturns[deptValue] || 0;
+};
+
+// 部门颜色
+const getDepartmentColor = (deptValue: string) => {
+  const colorMap = {
+    "car-lens": "#1890ff",
+    "car-module": "#52c41a",
+    ca003: "#722ed1",
+    "mobile-lens": "#fa8c16",
+    "mobile-module": "#eb2f96",
+    "fuzhou-hengtai": "#13c2c2",
+    "hd-wide-lens": "#faad14",
+    "hd-wide-module": "#a0d911",
+    "glass-lens": "#f5222d",
+    "precision-parts": "#2f54eb",
+  };
+
+  return colorMap[deptValue] || "#1890ff";
+};
 // 状态标识
 const getStatusType = (status: string) => {
   const statusMap: Record<string, any> = {
@@ -596,7 +721,7 @@ const applyFilters = () => {
 onMounted(() => {
   initCharts();
   updateCustomerSatisfactionChart(); // 初始化客户满意度图表
-
+  updateReturnsData();
   // 窗口大小改变时重绘图表
   window.addEventListener("resize", () => {
     const charts = [
@@ -658,5 +783,32 @@ onMounted(() => {
 .chart-filter-wrapper {
   display: flex;
   justify-content: flex-end;
+}
+.satisfaction-dashboard {
+  padding: 20px;
+}
+.returns-card {
+  margin-bottom: 20px;
+}
+
+.returns-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.sub-dept-stats {
+  margin-top: 12px;
+  border-top: 1px dashed #f0f0f0;
+  padding-top: 8px;
+}
+
+.sub-dept-item {
+  font-size: 13px;
+  color: rgba(0, 0, 0, 0.65);
+  line-height: 22px;
+  display: flex;
+  justify-content: space-between;
 }
 </style>
