@@ -107,6 +107,22 @@
     <a-row :gutter="16" class="chart-row">
       <a-col :xs="24" :sm="24" :md="12" :lg="12">
         <a-card class="chart-card" title="客户满意度分布">
+          <div class="chart-filter-wrapper">
+            <a-select
+              v-model:value="selectedDeptForChart"
+              style="width: 200px; margin-bottom: 15px"
+              placeholder="请选择部门"
+              @change="updateCustomerSatisfactionChart"
+            >
+              <a-select-option
+                v-for="dept in departmentOptions"
+                :key="dept.value"
+                :value="dept.value"
+              >
+                {{ dept.title }}
+              </a-select-option>
+            </a-select>
+          </div>
           <div ref="customerSatisfactionRadar" style="height: 300px"></div>
         </a-card>
       </a-col>
@@ -119,31 +135,11 @@
 
     <!-- 投诉详情表格区 -->
     <a-card class="detail-card" title="投诉详情列表">
-      <a-table
+      <ComplaintDetailTable
         :columns="complaintColumns"
-        :data-source="complaintData"
-        :pagination="{ pageSize: 10 }"
-        :scroll="{ x: 1000 }"
-      >
-        <template #bodyCell="{ column, record }">
-          <template v-if="column.dataIndex === 'level'">
-            <a-tag :color="getComplaintLevelColor(record.level)">{{
-              record.level
-            }}</a-tag>
-          </template>
-          <template v-if="column.dataIndex === 'status'">
-            <a-badge
-              :status="getStatusType(record.status)"
-              :text="record.status"
-            />
-          </template>
-          <template v-if="column.dataIndex === 'action'">
-            <a-button type="link" @click="viewDetail(record)"
-              >查看详情</a-button
-            >
-          </template>
-        </template>
-      </a-table>
+        :data="complaintData"
+        @view-detail="viewDetail"
+      />
     </a-card>
   </div>
 </template>
@@ -153,6 +149,13 @@ import { ref, onMounted, reactive, h } from "vue";
 import { ArrowUpOutlined, ArrowDownOutlined } from "@ant-design/icons-vue";
 import * as echarts from "echarts";
 import dayjs, { Dayjs } from "dayjs";
+import ComplaintDetailTable from "./ComplaintDetailTable.vue";
+import {
+  getDeptCustomerSatisfactionData,
+  departmentOptions,
+  customerOptions,
+  complaintData,
+} from "../data/mockData";
 
 // 渲染图标
 const renderUpIcon = () => h(ArrowUpOutlined);
@@ -205,148 +208,25 @@ const complaintTrendChart = ref<HTMLElement | null>(null);
 const customerSatisfactionRadar = ref<HTMLElement | null>(null);
 const complaintLevelMonthlyChart = ref<HTMLElement | null>(null);
 
-// 模拟数据
-const departmentOptions = [
-  {
-    title: "销售部",
-    value: "sales",
-    children: [
-      { title: "华北销售", value: "sales-north" },
-      { title: "华南销售", value: "sales-south" },
-    ],
-  },
-  {
-    title: "客服部",
-    value: "customer-service",
-    children: [
-      { title: "售前客服", value: "cs-presale" },
-      { title: "售后客服", value: "cs-aftersale" },
-    ],
-  },
-  { title: "技术部", value: "tech" },
-  { title: "财务部", value: "finance" },
-];
-
-const customerOptions = [
-  { label: "阿里巴巴", value: "alibaba" },
-  { label: "腾讯", value: "tencent" },
-  { label: "百度", value: "baidu" },
-  { label: "京东", value: "jd" },
-  { label: "华为", value: "huawei" },
-  { label: "小米", value: "xiaomi" },
-];
-
 // 投诉表格列定义
 const complaintColumns = [
-  {
-    title: "投诉ID",
-    dataIndex: "id",
-    key: "id",
-  },
-  {
-    title: "发生时间",
-    dataIndex: "date",
-    key: "date",
-    sorter: (a: any, b: any) => new Date(a.date) - new Date(b.date),
-  },
-  {
-    title: "所属部门",
-    dataIndex: "department",
-    key: "department",
-    filters: departmentOptions.map((dept) => ({
-      text: dept.title,
-      value: dept.value,
-    })),
-    onFilter: (value: string, record: any) => record.department.includes(value),
-  },
-  {
-    title: "客户名称",
-    dataIndex: "customer",
-    key: "customer",
-  },
-  {
-    title: "投诉等级",
-    dataIndex: "level",
-    key: "level",
-    filters: [
-      { text: "A级", value: "A级" },
-      { text: "B级", value: "B级" },
-      { text: "C级", value: "C级" },
-      { text: "D级", value: "D级" },
-      { text: "E级", value: "E级" },
-    ],
-    onFilter: (value: string, record: any) => record.level === value,
-  },
-  {
-    title: "问题分类",
-    dataIndex: "category",
-    key: "category",
-  },
-  {
-    title: "处理状态",
-    dataIndex: "status",
-    key: "status",
-  },
-  {
-    title: "操作",
-    dataIndex: "action",
-    key: "action",
-  },
-];
+  { title: "NO.", dataIndex: "no", key: "no" },
+  { title: "担当", dataIndex: "owner", key: "owner" },
+  { title: "客诉编号", dataIndex: "complaintId", key: "complaintId" },
+  { title: "客户", dataIndex: "customer", key: "customer" },
+  { title: "产品型号", dataIndex: "productModel", key: "productModel" },
+  { title: "投诉时间(年月日)", dataIndex: "deliveryDate", key: "deliveryDate" },
+  { title: "重要发生", dataIndex: "importantOccur", key: "importantOccur" },
+  { title: "不良率", dataIndex: "defectRate", key: "defectRate" },
+  { title: "客诉等级", dataIndex: "complaintLevel", key: "complaintLevel" },
 
-// 模拟投诉数据
-const complaintData = reactive([
-  {
-    key: "1",
-    id: "CP20231001",
-    date: "2023-10-01",
-    department: "客服部-售后客服",
-    customer: "阿里巴巴",
-    level: "A级",
-    category: "响应超时",
-    status: "已解决",
-  },
-  {
-    key: "2",
-    id: "CP20231005",
-    date: "2023-10-05",
-    department: "销售部-华北销售",
-    customer: "腾讯",
-    level: "B级",
-    category: "质量问题",
-    status: "处理中",
-  },
-  {
-    key: "3",
-    id: "CP20231010",
-    date: "2023-10-10",
-    department: "技术部",
-    customer: "百度",
-    level: "C级",
-    category: "功能缺陷",
-    status: "已解决",
-  },
-  {
-    key: "4",
-    id: "CP20231015",
-    date: "2023-10-15",
-    department: "销售部-华南销售",
-    customer: "京东",
-    level: "D级",
-    category: "操作建议",
-    status: "已关闭",
-  },
-  {
-    key: "5",
-    id: "CP20231020",
-    date: "2023-10-20",
-    department: "客服部-售前客服",
-    customer: "华为",
-    level: "E级",
-    category: "产品建议",
-    status: "待处理",
-  },
-]);
+  { title: "不良描述", dataIndex: "defectDesc", key: "defectDesc" },
+  { title: "根本原因", dataIndex: "rootCause", key: "rootCause" },
+  { title: "对策", dataIndex: "countermeasure", key: "countermeasure" },
+  { title: "权责区分", dataIndex: "responsibility", key: "responsibility" },
+  { title: "完成状态", dataIndex: "status", key: "status" },
+  { title: "结案时间", dataIndex: "closeDate", key: "closeDate" },
+];
 
 // 查看详情
 const viewDetail = (record: any) => {
@@ -360,14 +240,97 @@ const resetFilters = () => {
   selectedCustomers.value = [];
 };
 
-// 应用筛选
-const applyFilters = () => {
-  console.log("应用筛选", {
-    dateRange: dateRange.value,
-    departments: selectedDepts.value,
-    customers: selectedCustomers.value,
+// 客户满意度图表所选部门
+const selectedDeptForChart = ref("");
+
+// 更新客户满意度图表
+const updateCustomerSatisfactionChart = () => {
+  if (!customerSatisfactionRadar.value) return;
+
+  const chart =
+    echarts.getInstanceByDom(customerSatisfactionRadar.value) ||
+    echarts.init(customerSatisfactionRadar.value);
+  chart.clear(); // 确保清除旧图表
+
+  // 如果未选择部门，显示雷达图
+  if (!selectedDeptForChart.value) {
+    chart.setOption({
+      tooltip: {},
+      legend: {
+        data: ["阿里巴巴", "腾讯", "百度", "京东", "华为"],
+      },
+      radar: {
+        indicator: [
+          { name: "响应速度", max: 100 },
+          { name: "专业度", max: 100 },
+          { name: "解决效率", max: 100 },
+          { name: "服务态度", max: 100 },
+          { name: "整体满意度", max: 100 },
+        ],
+      },
+      series: [
+        {
+          type: "radar",
+          data: [
+            { value: [90, 85, 88, 92, 89], name: "阿里巴巴" },
+            { value: [85, 90, 80, 88, 84], name: "腾讯" },
+            { value: [78, 82, 85, 80, 81], name: "百度" },
+            { value: [82, 80, 75, 90, 82], name: "京东" },
+            { value: [92, 88, 90, 86, 90], name: "华为" },
+          ],
+        },
+      ],
+    });
+    return;
+  }
+
+  // 获取选中部门对应的模拟数据
+  const { customerScores } = getDeptCustomerSatisfactionData(
+    selectedDeptForChart.value
+  );
+
+  // 准备柱状图数据
+  const customers = Object.keys(customerScores);
+  const scores = customers.map((customer) => customerScores[customer].score);
+
+  // 设置柱状图
+  chart.setOption({
+    title: {
+      text: `${getDepartmentName(selectedDeptForChart.value)}客户满意度`,
+      left: "center",
+    },
+    tooltip: { trigger: "axis" },
+    legend: { show: false },
+    xAxis: { type: "category", data: customers },
+    yAxis: { type: "value", min: 0, max: 100, name: "满意度" },
+    series: [
+      {
+        data: scores.map((score) => ({
+          value: score,
+          itemStyle: { color: getSatisfactionColor(score) },
+        })),
+        type: "bar",
+        label: {
+          show: true,
+          position: "top",
+          formatter: "{c}分",
+        },
+      },
+    ],
   });
-  initCharts(); // 重新加载图表
+};
+
+// 根据部门ID获取部门名称
+const getDepartmentName = (deptId: string): string => {
+  for (const dept of departmentOptions) {
+    if (dept.value === deptId) return dept.title;
+    if (dept.children) {
+      for (const child of dept.children) {
+        if (child.value === deptId) return child.title;
+      }
+    }
+  }
+  return deptId;
 };
 
 // 初始化图表
@@ -619,8 +582,20 @@ const initCharts = () => {
   }
 };
 
+// 应用筛选
+const applyFilters = () => {
+  console.log("应用筛选", {
+    dateRange: dateRange.value,
+    departments: selectedDepts.value,
+    customers: selectedCustomers.value,
+  });
+  initCharts(); // 重新加载图表
+  updateCustomerSatisfactionChart(); // 更新客户满意度图表
+};
+
 onMounted(() => {
   initCharts();
+  updateCustomerSatisfactionChart(); // 初始化客户满意度图表
 
   // 窗口大小改变时重绘图表
   window.addEventListener("resize", () => {
@@ -678,5 +653,10 @@ onMounted(() => {
 
 .trend-indicator span {
   margin-right: 8px;
+}
+
+.chart-filter-wrapper {
+  display: flex;
+  justify-content: flex-end;
 }
 </style>
