@@ -90,22 +90,14 @@
       </a-col>
     </a-row>
 
-    <!-- 双维度分析区 -->
+    <!-- 客户满意度与投诉分析区 -->
     <a-row :gutter="16" class="chart-row">
-      <a-col :xs="24" :sm="24" :md="12" :lg="12">
-        <a-card class="chart-card" title="部门满意度排名">
-          <div ref="departmentSatisfactionChart" style="height: 300px"></div>
+      <a-col :xs="24" :sm="24" :md="8" :lg="8">
+        <a-card class="chart-card" title="当月事业部客户质量满意度评分">
+          <div ref="departmentSatisfactionChart" style="height: 380px"></div>
         </a-card>
       </a-col>
-      <a-col :xs="24" :sm="24" :md="12" :lg="12">
-        <a-card class="chart-card" title="月度投诉趋势">
-          <div ref="complaintTrendChart" style="height: 300px"></div>
-        </a-card>
-      </a-col>
-    </a-row>
-
-    <a-row :gutter="16" class="chart-row">
-      <a-col :xs="24" :sm="24" :md="12" :lg="12">
+      <a-col :xs="24" :sm="24" :md="8" :lg="8">
         <a-card class="chart-card" title="客户满意度分布">
           <div class="chart-filter-wrapper">
             <a-select
@@ -123,72 +115,32 @@
               </a-select-option>
             </a-select>
           </div>
-          <div ref="customerSatisfactionRadar" style="height: 300px"></div>
+          <div ref="customerSatisfactionRadar" style="height: 320px"></div>
         </a-card>
       </a-col>
-      <a-col :xs="24" :sm="24" :md="12" :lg="12">
-        <a-card class="chart-card" title="投诉等级月度分布">
-          <div ref="complaintLevelMonthlyChart" style="height: 300px"></div>
+      <a-col :xs="24" :sm="24" :md="8" :lg="8">
+        <a-card class="chart-card" title="月客诉件数">
+          <a-tabs default-active-key="trend">
+            <a-tab-pane key="trend" tab="投诉趋势">
+              <div ref="complaintTrendChart" style="height: 320px"></div>
+            </a-tab-pane>
+            <a-tab-pane key="level" tab="等级分布">
+              <div ref="complaintLevelMonthlyChart" style="height: 320px"></div>
+            </a-tab-pane>
+          </a-tabs>
         </a-card>
       </a-col>
     </a-row>
+
     <!-- 退货数据统计区 -->
-    <a-card class="returns-card" title="退货数据统计" :bordered="false">
-      <div class="returns-header">
-        <a-statistic
-          title="总体退货数"
-          :value="totalReturns"
-          style="margin-bottom: 20px"
-        >
-          <template #suffix>
-            <span style="font-size: 16px">件</span>
-          </template>
-        </a-statistic>
-        <a-range-picker
-          v-model:value="returnsDateRange"
-          format="YYYY-MM"
-          :placeholder="['开始月份', '结束月份']"
-          @change="updateReturnsData"
-          style="margin-bottom: 20px"
-        />
-      </div>
-      <a-divider style="margin: 16px 0" />
-      <a-row :gutter="[16, 16]">
-        <a-col
-          :xs="24"
-          :sm="12"
-          :md="8"
-          :lg="6"
-          v-for="dept in topDepartments"
-          :key="dept.value"
-        >
-          <a-card bordered>
-            <a-statistic
-              :title="dept.title"
-              :value="getDepartmentReturns(dept.value)"
-              :value-style="{ color: getDepartmentColor(dept.value) }"
-            >
-              <template #suffix>
-                <span>件</span>
-              </template>
-            </a-statistic>
-            <div
-              v-if="dept.children && dept.children.length > 0"
-              class="sub-dept-stats"
-            >
-              <div
-                v-for="child in dept.children"
-                :key="child.value"
-                class="sub-dept-item"
-              >
-                <span>{{ child.title }}: </span>
-                <span>{{ getSubDepartmentReturns(child.value) }}件</span>
-              </div>
-            </div>
-          </a-card>
-        </a-col>
-      </a-row>
-    </a-card>
+    <ReturnsStatistics
+      :total-returns="totalReturns"
+      :returns-date-range="returnsDateRange"
+      :top-departments="topDepartments"
+      :department-returns="departmentReturns"
+      @update-date-range="updateReturnsData"
+    />
+
     <!-- 投诉详情表格区 -->
     <a-card class="detail-card" title="投诉详情列表">
       <ComplaintDetailTable
@@ -206,6 +158,7 @@ import { ArrowUpOutlined, ArrowDownOutlined } from "@ant-design/icons-vue";
 import * as echarts from "echarts";
 import dayjs, { Dayjs } from "dayjs";
 import ComplaintDetailTable from "./ComplaintDetailTable.vue";
+import ReturnsStatistics from "./dashboard/ReturnsStatistics.vue";
 import {
   getDeptCustomerSatisfactionData,
   departmentOptions,
@@ -269,16 +222,7 @@ const updateReturnsData = () => {
   totalReturns.value = total;
 };
 // 投诉等级颜色
-const getComplaintLevelColor = (level: string) => {
-  const colorMap: Record<string, string> = {
-    A级: "#ff4d4f",
-    B级: "#ff7a45",
-    C级: "#faad14",
-    D级: "#52c41a",
-    E级: "#bfbfbf",
-  };
-  return colorMap[level] || "#bfbfbf";
-};
+
 const getDepartmentReturns = (deptValue: string) => {
   return departmentReturns[deptValue] || 0;
 };
@@ -542,7 +486,7 @@ const initCharts = () => {
     });
   }
 
-  // 部门满意度排名柱状图
+  // 部门满意度排名柱状图 - 调整为更长的图表
   if (departmentSatisfactionChart.value) {
     const chart = echarts.init(departmentSatisfactionChart.value);
     chart.setOption({
@@ -550,13 +494,24 @@ const initCharts = () => {
       xAxis: { type: "value", min: 50, max: 100 },
       yAxis: {
         type: "category",
-        data: ["技术部", "客服部", "销售部", "财务部"],
+        data: ["技术部", "客服部", "销售部", "财务部", "生产部", "研发部"],
+        axisLabel: {
+          interval: 0,
+          rotate: 0,
+        },
+      },
+      grid: {
+        left: "15%",
+        right: "10%",
+        top: "5%",
+        bottom: "5%",
+        containLabel: true,
       },
       series: [
         {
           name: "满意度分数",
           type: "bar",
-          data: [88.5, 83.6, 79.8, 85.2],
+          data: [88.5, 83.6, 79.8, 85.2, 81.9, 87.3],
           itemStyle: {
             color: function (params: any) {
               const score = params.data;
@@ -810,5 +765,10 @@ onMounted(() => {
   line-height: 22px;
   display: flex;
   justify-content: space-between;
+}
+
+/* 可能需要添加一些额外的样式 */
+.chart-card {
+  height: 100%;
 }
 </style>
