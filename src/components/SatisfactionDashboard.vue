@@ -64,7 +64,7 @@
             :value-style="{ color: '#52c41a', fontSize: '24px' }"
           />
           <div class="trend-info">
-            <span>同比</span>
+            <span>环比</span>
             <a-statistic
               :value="3.2"
               :precision="1"
@@ -206,32 +206,10 @@
     <!-- 核心指标看板 -->
     <a-row :gutter="16" class="stats-row">
       <a-col :span="8">
-        <a-card class="chart-card" title="月度投诉趋势">
-          <div ref="miniComplaintTrendChart" style="height: 250px"></div>
-        </a-card>
-      </a-col>
-      <a-col :span="8">
         <a-card class="chart-card" title="满意度趋势">
-          <div ref="satisfactionTrendChart" style="height: 250px"></div>
+          <div ref="satisfactionTrendChart" style="height: 350px"></div>
         </a-card>
       </a-col>
-      <a-col :span="8">
-        <a-card class="chart-card" title="月客诉件数">
-          <div class="complaint-header">
-            <a-range-picker
-              v-model:value="complaintDateRange"
-              format="YYYY-MM"
-              :placeholder="['开始月份', '结束月份']"
-              picker="month"
-            />
-            <div ref="complaintLevelChart" style="height: 250px"></div>
-          </div>
-        </a-card>
-      </a-col>
-    </a-row>
-
-    <!-- 客户满意度与投诉分析区 -->
-    <a-row :gutter="16" class="chart-row">
       <a-col :xs="24" :sm="24" :md="8" :lg="8">
         <a-card class="chart-card" title="当月事业部客户质量满意度评分">
           <div ref="departmentSatisfactionChart" style="height: 380px"></div>
@@ -257,6 +235,46 @@
             </a-select>
           </div>
           <div ref="customerSatisfactionRadar" style="height: 320px"></div>
+        </a-card>
+      </a-col>
+    </a-row>
+
+    <!-- 客户满意度与投诉分析区 -->
+    <a-row :gutter="16" class="chart-row">
+      <a-col :span="8">
+        <a-card class="chart-card" title="月度投诉趋势">
+          <div
+            class="complaint-header"
+            style="display: flex; justify-content: flex-end"
+          >
+            <a-range-picker
+              v-model:value="monthtrend"
+              format="YYYY-MM"
+              :placeholder="['开始月份', '结束月份']"
+              picker="month"
+            />
+          </div>
+          <div ref="miniComplaintTrendChart" style="height: 250px"></div>
+        </a-card>
+      </a-col>
+      <a-col :span="8">
+        <a-card class="chart-card" title="月客诉件数">
+          <div
+            class="complaint-header"
+            style="
+              display: flex;
+              justify-content: flex-end;
+              margin-bottom: 16px;
+            "
+          >
+            <a-range-picker
+              v-model:value="complaintDateRange"
+              format="YYYY-MM"
+              :placeholder="['开始月份', '结束月份']"
+              picker="month"
+            />
+          </div>
+          <div ref="complaintLevelChart" style="height: 250px"></div>
         </a-card>
       </a-col>
       <a-col :xs="24" :sm="24" :md="8" :lg="8">
@@ -289,7 +307,29 @@
 <script setup lang="ts">
 import { ref, onMounted, reactive, h } from "vue";
 import { ArrowUpOutlined, ArrowDownOutlined } from "@ant-design/icons-vue";
-import * as echarts from "echarts";
+import * as echarts from "echarts/core";
+import { BarChart, LineChart, PieChart, RadarChart } from "echarts/charts";
+import {
+  TitleComponent,
+  TooltipComponent,
+  LegendComponent,
+  GridComponent,
+  MarkLineComponent,
+} from "echarts/components";
+import { CanvasRenderer } from "echarts/renderers";
+
+echarts.use([
+  BarChart,
+  LineChart,
+  PieChart,
+  RadarChart,
+  TitleComponent,
+  TooltipComponent,
+  LegendComponent,
+  GridComponent,
+  MarkLineComponent,
+  CanvasRenderer,
+]);
 import dayjs, { Dayjs } from "dayjs";
 import ComplaintDetailTable from "./ComplaintDetailTable.vue";
 import ReturnsStatistics from "./dashboard/ReturnsStatistics.vue";
@@ -310,6 +350,7 @@ const complaintDateRange = ref<[Dayjs, Dayjs]>([
   dayjs().subtract(5, "month"),
   dayjs(),
 ]);
+const monthtrend = ref<[Dayjs, Dayjs]>([dayjs().subtract(5, "month"), dayjs()]);
 const returnsDateRange = ref<[Dayjs, Dayjs]>([
   dayjs().subtract(5, "month"),
   dayjs(),
@@ -375,7 +416,7 @@ const getDepartmentColor = (deptValue: string) => {
   const colorMap = {
     "car-lens": "#1890ff",
     "car-module": "#52c41a",
-    ca003: "#722ed1",
+    ca003: "#a0d911",
     "mobile-lens": "#fa8c16",
     "mobile-module": "#eb2f96",
     "fuzhou-hengtai": "#13c2c2",
@@ -476,15 +517,16 @@ const updateCustomerSatisfactionChart = () => {
   const chart =
     echarts.getInstanceByDom(customerSatisfactionRadar.value) ||
     echarts.init(customerSatisfactionRadar.value);
-  chart.clear(); // 确保清除旧图表
+  chart.clear();
 
   // 构建雷达图数据
   let radarData = [];
   let legendData = [];
+  let radius = "60%"; // 默认半径
 
-  // 根据是否选择客户类型来过滤客户数据
+  // 根据选中客户数量动态调整半径，防止超出
+  let selectedCount = 0;
   if (selectedCustomerTypeForChart.value) {
-    // 根据选择的客户类型获取对应的客户满意度数据
     const customersByType = {
       automobile: ["上汽集团", "一汽集团", "比亚迪"],
       electronics: ["华为", "小米", "海信"],
@@ -492,39 +534,43 @@ const updateCustomerSatisfactionChart = () => {
       optics: ["蔡司", "尼康", "佳能"],
       industrial: ["西门子", "ABB", "三菱电机"],
     };
-
     const selectedCustomers =
       customersByType[selectedCustomerTypeForChart.value] || [];
-
-    // 为每个客户生成雷达图数据
+    selectedCount = selectedCustomers.length;
+    legendData = selectedCustomers;
     selectedCustomers.forEach((customer) => {
-      legendData.push(customer);
-      // 生成一些随机数据
       const baseScore = 75 + Math.floor(Math.random() * 15);
       radarData.push({
         name: customer,
         value: [
-          baseScore + Math.floor(Math.random() * 10) - 5, // 响应速度
-          baseScore + Math.floor(Math.random() * 10) - 5, // 专业度
-          baseScore + Math.floor(Math.random() * 10) - 5, // 解决效率
-          baseScore + Math.floor(Math.random() * 10) - 5, // 服务态度
-          baseScore, // 整体满意度
+          Math.floor(Math.random() * 36), // 响应速度 0~35
+          Math.floor(Math.random() * 36), // 专业度 0~35
+          Math.floor(Math.random() * 11), // 解决效率 0~10
+          Math.floor(Math.random() * 11), // 服务态度 0~10
+          Math.floor(Math.random() * 11), // 整体满意度 0~10
         ],
       });
     });
   } else {
-    // 使用默认的代表性客户数据
     legendData = ["华为", "上汽集团", "小米", "比亚迪", "西门子"];
     radarData = [
-      { value: [92, 88, 90, 86, 90], name: "华为" },
-      { value: [85, 90, 80, 88, 84], name: "上汽集团" },
-      { value: [78, 82, 85, 80, 81], name: "小米" },
-      { value: [82, 80, 75, 90, 82], name: "比亚迪" },
-      { value: [88, 85, 87, 84, 86], name: "西门子" },
+      { value: [32, 30, 9, 9, 9], name: "华为" },
+      { value: [28, 33, 8, 8, 8], name: "上汽集团" },
+      { value: [25, 27, 7, 7, 7], name: "小米" },
+      { value: [29, 28, 8, 9, 8], name: "比亚迪" },
+      { value: [31, 29, 9, 8, 9], name: "西门子" },
     ];
+    selectedCount = legendData.length;
   }
 
-  // 设置雷达图配置
+  // 根据数量调整半径
+  if (selectedCount > 4) {
+    radius = "50%";
+  }
+  if (selectedCount > 6) {
+    radius = "40%";
+  }
+
   chart.setOption({
     title: selectedCustomerTypeForChart.value
       ? {
@@ -541,12 +587,13 @@ const updateCustomerSatisfactionChart = () => {
       bottom: 0,
     },
     radar: {
+      radius, // 动态半径
       indicator: [
-        { name: "响应速度", max: 100 },
-        { name: "专业度", max: 100 },
-        { name: "解决效率", max: 100 },
-        { name: "服务态度", max: 100 },
-        { name: "整体满意度", max: 100 },
+        { name: "响应速度", max: 35 },
+        { name: "专业度", max: 35 },
+        { name: "解决效率", max: 10 },
+        { name: "服务态度", max: 10 },
+        { name: "整体满意度", max: 10 },
       ],
     },
     series: [
@@ -565,7 +612,6 @@ const updateCustomerSatisfactionChart = () => {
     ],
   });
 };
-
 // 根据客户类型ID获取客户类型名称
 const getCustomerTypeLabel = (typeId) => {
   const type = customerTypeOptions.find((t) => t.value === typeId);
@@ -715,16 +761,44 @@ const initCharts = () => {
   // 投诉等级分布环形图
   if (complaintLevelChart.value) {
     const chart = echarts.init(complaintLevelChart.value);
+
+    // 投诉各等级数据
+    const complaintData = [
+      { value: 15, name: "A级", itemStyle: { color: "#ff4d4f" } },
+      { value: 25, name: "B级", itemStyle: { color: "#ff7a45" } },
+      { value: 35, name: "C级", itemStyle: { color: "#faad14" } },
+      { value: 20, name: "D级", itemStyle: { color: "#52c41a" } },
+      { value: 5, name: "E级", itemStyle: { color: "#a0d911" } },
+    ];
+
+    // 计算总数
+    const total = complaintData.reduce((sum, item) => sum + item.value, 0);
+
     chart.setOption({
+      title: {
+        text: `总计: ${total}件`,
+        left: "center",
+        top: "0",
+        textStyle: {
+          fontSize: 14,
+          fontWeight: "normal",
+          color: "rgba(0,0,0,0.65)",
+        },
+      },
       tooltip: {
         trigger: "item",
-        formatter: "{a} <br/>{b}: {c} ({d}%)",
+        formatter: "{a} <br/>{b}: {c}件 ({d}%)",
       },
       legend: {
         orient: "vertical",
         right: 10,
         top: "center",
         data: ["A级", "B级", "C级", "D级", "E级"],
+        formatter: (name) => {
+          // 在图例中也显示数量
+          // const item = complaintData.find((d) => d.name === name);
+          return `${name}`;
+        },
       },
       series: [
         {
@@ -733,21 +807,29 @@ const initCharts = () => {
           radius: ["50%", "70%"],
           avoidLabelOverlap: false,
           label: {
-            show: false,
+            show: true,
+            position: "outside",
+            formatter: "{b}: {c}件",
+            fontSize: 12,
+          },
+          labelLine: {
+            show: true,
+            length: 10,
+            length2: 10,
           },
           emphasis: {
             label: {
               show: true,
               fontWeight: "bold",
+              fontSize: 14,
+            },
+            itemStyle: {
+              shadowBlur: 10,
+              shadowOffsetX: 0,
+              shadowColor: "rgba(0, 0, 0, 0.5)",
             },
           },
-          data: [
-            { value: 15, name: "A级", itemStyle: { color: "#ff4d4f" } },
-            { value: 25, name: "B级", itemStyle: { color: "#ff7a45" } },
-            { value: 35, name: "C级", itemStyle: { color: "#faad14" } },
-            { value: 20, name: "D级", itemStyle: { color: "#52c41a" } },
-            { value: 5, name: "E级", itemStyle: { color: "#bfbfbf" } },
-          ],
+          data: complaintData,
         },
       ],
     });
@@ -756,20 +838,57 @@ const initCharts = () => {
   // 部门满意度排名柱状图 - 调整为更长的图表
   if (departmentSatisfactionChart.value) {
     const chart = echarts.init(departmentSatisfactionChart.value);
+
+    // 原始数据
+    const departmentsRaw = [
+      "车载镜头-南昌",
+      "车载镜头-合肥",
+      "车载镜头-越南",
+      "车载模组-合肥",
+      "CA003-南昌",
+      "CA003-墨西哥",
+      "手机镜头",
+      "手机模组",
+      "高清广角镜头",
+      "高清广角模组",
+      "玻璃镜片-南昌",
+      "精密元件-南昌",
+    ];
+    const scoresRaw = [
+      88.5, 83.6, 79.8, 85.2, 81.9, 87.3, 82.1, 78.5, 80.2, 84.7, 76.9, 81.3,
+      79.5,
+    ];
+
+    // 组合并排序
+    const sorted = departmentsRaw
+      .map((dept, idx) => ({
+        dept,
+        score: scoresRaw[idx],
+      }))
+      .sort((a, b) => a.score - b.score);
+
+    const departments = sorted.map((item) => item.dept);
+    const scores = sorted.map((item) => item.score);
+
     chart.setOption({
       tooltip: { trigger: "axis" },
       xAxis: { type: "value", min: 50, max: 100 },
       yAxis: {
         type: "category",
-        data: ["技术部", "客服部", "销售部", "财务部", "生产部", "研发部"],
+        data: departments,
         axisLabel: {
           interval: 0,
-          rotate: 0,
+          fontSize: 12,
+          formatter: function (value) {
+            return value.length > 10
+              ? value.slice(0, 10) + "\n" + value.slice(10)
+              : value;
+          },
         },
       },
       grid: {
-        left: "15%",
-        right: "10%",
+        left: "18%",
+        right: "8%",
         top: "5%",
         bottom: "5%",
         containLabel: true,
@@ -778,9 +897,10 @@ const initCharts = () => {
         {
           name: "满意度分数",
           type: "bar",
-          data: [88.5, 83.6, 79.8, 85.2, 81.9, 87.3],
+          data: scores,
+          barCategoryGap: "30%",
           itemStyle: {
-            color: function (params: any) {
+            color: function (params) {
               const score = params.data;
               if (score >= 80) return "#52c41a";
               if (score >= 60) return "#faad14";
@@ -791,12 +911,81 @@ const initCharts = () => {
             show: true,
             position: "right",
             formatter: "{c}",
+            fontSize: 12,
           },
         },
       ],
     });
   }
-
+  // 设置横坐标字体颜色为深色
+  if (miniComplaintTrendChart.value) {
+    const chart = echarts.getInstanceByDom(miniComplaintTrendChart.value);
+    if (chart) {
+      chart.setOption({
+        xAxis: {
+          axisLabel: {
+            color: "#595959", // 深灰色
+          },
+          axisLine: {
+            lineStyle: {
+              color: "#bfbfbf",
+            },
+          },
+        },
+      });
+    }
+  }
+  if (satisfactionTrendChart.value) {
+    const chart = echarts.getInstanceByDom(satisfactionTrendChart.value);
+    if (chart) {
+      chart.setOption({
+        xAxis: {
+          axisLabel: {
+            color: "#595959",
+          },
+          axisLine: {
+            lineStyle: {
+              color: "#bfbfbf",
+            },
+          },
+        },
+      });
+    }
+  }
+  if (complaintTrendChart.value) {
+    const chart = echarts.getInstanceByDom(complaintTrendChart.value);
+    if (chart) {
+      chart.setOption({
+        xAxis: {
+          axisLabel: {
+            color: "#595959",
+          },
+          axisLine: {
+            lineStyle: {
+              color: "#bfbfbf",
+            },
+          },
+        },
+      });
+    }
+  }
+  if (complaintLevelMonthlyChart.value) {
+    const chart = echarts.getInstanceByDom(complaintLevelMonthlyChart.value);
+    if (chart) {
+      chart.setOption({
+        xAxis: {
+          axisLabel: {
+            color: "#595959",
+          },
+          axisLine: {
+            lineStyle: {
+              color: "#bfbfbf",
+            },
+          },
+        },
+      });
+    }
+  }
   // 月度投诉趋势图
   if (complaintTrendChart.value) {
     const chart = echarts.init(complaintTrendChart.value);
@@ -921,7 +1110,8 @@ const initCharts = () => {
           name: "E级",
           type: "bar",
           stack: "总量",
-          itemStyle: { color: "#bfbfbf" },
+          itemStyle: { color: "#a0d911" },
+
           data: [3, 4, 3, 2, 3, 2],
         },
       ],

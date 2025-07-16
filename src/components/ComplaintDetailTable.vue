@@ -6,7 +6,7 @@
         <a-form-item label="部门筛选">
           <a-tree-select
             v-model:value="selectedDepartment"
-            style="width: 100%"
+            style="width: 60%"
             :dropdown-style="{ maxHeight: '400px', overflow: 'auto' }"
             :tree-data="departmentOptions"
             placeholder="请选择部门"
@@ -23,7 +23,7 @@
             format="YYYY-MM-DD"
             :placeholder="['开始日期', '结束日期']"
             @change="handleFilter"
-            style="width: 100%"
+            style="width: 60%"
           />
         </a-form-item>
       </a-col>

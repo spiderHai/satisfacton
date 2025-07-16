@@ -1,13 +1,24 @@
 import { defineConfig } from "vite";
 import vue from "@vitejs/plugin-vue";
+import Components from "unplugin-vue-components/vite";
+import { AntDesignVueResolver } from "unplugin-vue-components/resolvers";
 import { viteSingleFile } from "vite-plugin-singlefile";
-// https://vite.dev/config/
 
 export default defineConfig({
-  base: "./", // 👈 这里必须是你的仓库名
-  plugins: [vue(), viteSingleFile()],
-
+  base: "./",
+  plugins: [
+    vue(),
+    viteSingleFile(),
+    Components({
+      resolvers: [
+        AntDesignVueResolver({
+          importStyle: false, // 不自动导入样式
+        }),
+      ],
+    }),
+  ],
   build: {
-    assetsInlineLimit: 100000000, // 尽可能内联资源
+    assetsInlineLimit: 100000000,
+    minify: false,
   },
 });

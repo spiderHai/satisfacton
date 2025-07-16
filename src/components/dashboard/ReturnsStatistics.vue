@@ -29,15 +29,34 @@
         :key="dept.value"
       >
         <a-card bordered>
-          <a-statistic
-            :title="dept.title"
-            :value="getDepartmentReturns(dept.value)"
-            :value-style="{ color: getDepartmentColor(dept.value) }"
+          <div
+            style="
+              display: flex;
+              align-items: center;
+              justify-content: space-between;
+            "
           >
-            <template #suffix>
-              <span>件</span>
-            </template>
-          </a-statistic>
+            <a-statistic
+              :title="dept.title"
+              :value="getDepartmentReturns(dept.value)"
+              :value-style="{ color: getDepartmentColor(dept.value) }"
+            >
+              <template #suffix>
+                <span>件</span>
+              </template>
+            </a-statistic>
+            <div
+              :style="{
+                marginLeft: '12px',
+                fontSize: '14px',
+                color: getDepartmentColor(dept.value),
+                fontWeight: 500,
+              }"
+            >
+              <span>退货率：</span>
+              <span>{{ getDepartmentRate(dept.value) }}</span>
+            </div>
+          </div>
           <div
             v-if="dept.children && dept.children.length > 0"
             class="sub-dept-stats"
@@ -46,9 +65,20 @@
               v-for="child in dept.children"
               :key="child.value"
               class="sub-dept-item"
+              style="
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+              "
             >
-              <span>{{ child.title }}: </span>
-              <span>{{ getSubDepartmentReturns(child.value) }}件</span>
+              <div>
+                <span>{{ child.title }}: </span>
+                <span>{{ getSubDepartmentReturns(child.value) }}件</span>
+              </div>
+              <div style="margin-left: 12px; font-size: 14px; color: #888">
+                <span>退货率：</span>
+                <span>{{ getSubDepartmentRate(child.value) }}</span>
+              </div>
             </div>
           </div>
         </a-card>
@@ -101,6 +131,20 @@ const getDepartmentReturns = (deptValue: string) => {
 // 获取子部门退货数
 const getSubDepartmentReturns = (deptValue: string) => {
   return props.departmentReturns[deptValue] || 0;
+};
+
+// 计算部门退货率
+const getDepartmentRate = (deptValue: string) => {
+  if (!props.totalReturns || props.totalReturns === 0) return "0%";
+  const val = props.departmentReturns[deptValue] || 0;
+  return ((val / props.totalReturns) * 100).toFixed(2) + "%";
+};
+
+// 计算子部门退货率
+const getSubDepartmentRate = (deptValue: string) => {
+  if (!props.totalReturns || props.totalReturns === 0) return "0%";
+  const val = props.departmentReturns[deptValue] || 0;
+  return ((val / props.totalReturns) * 100).toFixed(2) + "%";
 };
 
 // 部门颜色
