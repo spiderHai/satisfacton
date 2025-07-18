@@ -270,7 +270,7 @@ onMounted(() => {
 });
 </script>
 
-<style>
+<style scoped>
 .returns-statistics-row {
   margin-bottom: 24px;
 }
@@ -283,8 +283,8 @@ onMounted(() => {
 }
 /* 穿透修改 ant-card-body 样式 */
 .returns-statistics-card :deep(.ant-card-body) {
-  padding-top: 36px !important;
-  padding-bottom: 0px !important;
+  padding-top: 52px;
+  padding-bottom: 0px;
 }
 
 /* :deep(.returns-statistics-card .ant-card-body) {
@@ -298,8 +298,4 @@ onMounted(() => {
   padding: 16px;
 }
 */
-.returns-statistics-card .ant-card-body {
-  padding-top: 48px;
-  padding-bottom: 0px;
-}
 </style>
