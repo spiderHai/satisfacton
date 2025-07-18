@@ -263,10 +263,42 @@
             class="complaint-header"
             style="
               display: flex;
-              justify-content: flex-end;
+              justify-content: space-between;
               margin-bottom: 16px;
             "
           >
+            <div style="display: flex; align-items: center; gap: 8px">
+              <a-button
+                size="small"
+                @click="
+                  complaintDateRange.value = [
+                    dayjs().startOf('month'),
+                    dayjs().endOf('month'),
+                  ]
+                "
+                >当月</a-button
+              >
+              <a-button
+                size="small"
+                @click="
+                  complaintDateRange.value = [
+                    dayjs().startOf('week'),
+                    dayjs().endOf('week'),
+                  ]
+                "
+                >当周</a-button
+              >
+              <a-button
+                size="small"
+                @click="
+                  complaintDateRange.value = [
+                    dayjs().startOf('day'),
+                    dayjs().endOf('day'),
+                  ]
+                "
+                >当日</a-button
+              >
+            </div>
             <a-range-picker
               v-model:value="complaintDateRange"
               format="YYYY-MM"
