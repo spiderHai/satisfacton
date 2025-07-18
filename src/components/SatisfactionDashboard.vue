@@ -318,11 +318,11 @@
 
     <!-- 退货数据统计区 -->
     <ReturnsStatistics
-      :total-returns="totalReturns"
-      :returns-date-range="returnsDateRange"
-      :top-departments="topDepartments"
-      :department-returns="departmentReturns"
-      @update-date-range="updateReturnsData"
+      :department-data="{
+        departments: departmentList,
+        returns: [50, 80, 30, 45, 60, 38, 55, 40, 70, 65, 33, 28],
+        rates: [3.5, 5.1, 2.2, 4.0, 6.2, 3.8, 4.5, 3.9, 5.6, 4.8, 2.7, 3.2],
+      }"
     />
 
     <!-- 投诉详情表格区 -->
@@ -330,6 +330,7 @@
       <ComplaintDetailTable
         :columns="complaintColumns"
         :data="complaintData"
+        :departmentOptions="departmentOptions"
         @view-detail="viewDetail"
       />
     </a-card>
@@ -349,7 +350,20 @@ import {
   MarkLineComponent,
 } from "echarts/components";
 import { CanvasRenderer } from "echarts/renderers";
-
+const departmentList = [
+  "车载镜头-南昌",
+  "车载镜头-合肥",
+  "车载镜头-越南",
+  "车载模组-合肥",
+  "CA003-南昌",
+  "CA003-墨西哥",
+  "手机镜头",
+  "手机模组",
+  "高清广角镜头",
+  "高清广角模组",
+  "玻璃镜片-南昌",
+  "精密元件-南昌",
+];
 echarts.use([
   BarChart,
   LineChart,
@@ -872,20 +886,7 @@ const initCharts = () => {
     const chart = echarts.init(departmentSatisfactionChart.value);
 
     // 原始数据
-    const departmentsRaw = [
-      "车载镜头-南昌",
-      "车载镜头-合肥",
-      "车载镜头-越南",
-      "车载模组-合肥",
-      "CA003-南昌",
-      "CA003-墨西哥",
-      "手机镜头",
-      "手机模组",
-      "高清广角镜头",
-      "高清广角模组",
-      "玻璃镜片-南昌",
-      "精密元件-南昌",
-    ];
+    const departmentsRaw = departmentList;
     const scoresRaw = [
       88.5, 83.6, 79.8, 85.2, 81.9, 87.3, 82.1, 78.5, 80.2, 84.7, 76.9, 81.3,
       79.5,
