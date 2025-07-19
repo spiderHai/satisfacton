@@ -47,7 +47,73 @@ const props = defineProps<{
     stack: number[][];
   };
 }>();
-
+const departmentCustomerProductMap = {
+  "车载镜头-南昌": {
+    customers: ["阿里巴巴", "腾讯", "百度"],
+    products: ["高清夜视镜头", "广角行车镜头", "AI识别摄像头"],
+  },
+  "车载镜头-合肥": {
+    customers: ["华为", "小米"],
+    products: ["自动驾驶传感器", "环视监控系统", "激光雷达镜头"],
+  },
+  "车载镜头-越南": {
+    customers: ["京东", "美团", "拼多多", "滴滴"],
+    products: ["防水车载镜头", "卡车专用摄像头", "车队管理系统"],
+  },
+  "车载模组-合肥": {
+    customers: ["网易", "搜狐"],
+    products: ["智能座舱模组", "ADAS集成系统", "车载娱乐终端"],
+  },
+  "CA003-南昌": {
+    customers: ["字节跳动", "快手"],
+    products: ["工业检测镜头", "安防监控模组", "智能门禁系统"],
+  },
+  "CA003-墨西哥": {
+    customers: ["亚马逊"],
+    products: ["物流分拣镜头", "仓储监控系统", "无人机视觉模组"],
+  },
+  手机镜头: {
+    customers: ["OPPO", "VIVO", "荣耀"],
+    products: ["6400万主摄", "超广角副摄", "微距镜头"],
+  },
+  手机模组: {
+    customers: ["三星", "苹果", "一加"],
+    products: ["全面屏模组", "折叠屏摄像头", "屏下指纹模组"],
+  },
+  抚州恒泰: {
+    customers: ["联想", "戴尔", "惠普"],
+    products: ["笔记本摄像头", "视频会议系统", "智能家居镜头"],
+  },
+  高清广角镜头: {
+    customers: ["大疆", "GoPro"],
+    products: ["运动相机镜头", "无人机航拍镜头", "全景VR镜头"],
+  },
+  高清广角模组: {
+    customers: ["索尼", "尼康"],
+    products: ["微单相机模组", "电影级摄像模组", "8K视频模组"],
+  },
+  "玻璃镜片-南昌": {
+    customers: ["蔡司", "徕卡"],
+    products: ["光学镀膜镜片", "蓝宝石玻璃镜片", "防眩光镜片"],
+  },
+  "精密元件-南昌": {
+    customers: ["ASML", "台积电"],
+    products: ["纳米级马达", "精密对焦机构", "光学防抖组件"],
+  },
+};
+const departmentList = Object.keys(departmentCustomerProductMap);
+const departmentOptions = ref(
+  departmentList.map((dep) => ({
+    title: dep,
+    value: dep,
+    key: dep,
+  }))
+);
+const selectedDepartment = ref(departmentList[0]);
+function handleFilter(value: string | undefined) {
+  selectedDepartment.value = value || departmentList[0];
+  renderCustomerChart();
+}
 const defaultMonthly = {
   months: ["2月", "3月", "4月", "5月", "6月", "7月"],
   returns: [120, 132, 101, 134, 90, 230],
@@ -79,80 +145,80 @@ const monthlyChartRef = ref();
 const departmentChartRef = ref();
 const customerChartRef = ref();
 
-const selectedDepartment = ref<string | undefined>("车载镜头-南昌");
+// const selectedDepartment = ref<string | undefined>("车载镜头-南昌");
 
-function handleFilter(value: string | undefined) {
-  selectedDepartment.value = value;
+// function handleFilter(value: string | undefined) {
+//   selectedDepartment.value = value;
 
-  let customers = ["客户A", "客户B", "客户C", "客户D"];
-  let products = ["产品A", "产品B", "产品C"];
-  let stack = products.map(() =>
-    customers.map(() => Math.floor(Math.random() * 30 + 10))
-  );
+//   let customers = ["客户A", "客户B", "客户C", "客户D"];
+//   let products = ["产品A", "产品B", "产品C"];
+//   let stack = products.map(() =>
+//     customers.map(() => Math.floor(Math.random() * 30 + 10))
+//   );
 
-  // 匹配 SatisfactionDashboard 的颜色方案
-  const colors = [
-    {
-      type: "linear",
-      x: 0,
-      y: 0,
-      x2: 0,
-      y2: 1,
-      colorStops: [
-        { offset: 0, color: "#ff4d4f" }, // 赤红色
-        { offset: 1, color: "#a8071a" },
-      ],
-    },
-    {
-      type: "linear",
-      x: 0,
-      y: 0,
-      x2: 0,
-      y2: 1,
-      colorStops: [
-        { offset: 0, color: "#52c41a" }, // 成功绿色
-        { offset: 1, color: "#389e0d" },
-      ],
-    },
-    {
-      type: "linear",
-      x: 0,
-      y: 0,
-      x2: 0,
-      y2: 1,
-      colorStops: [
-        { offset: 0, color: "#faad14" }, // 警告黄色
-        { offset: 1, color: "#d48806" },
-      ],
-    },
-  ];
+//   // 匹配 SatisfactionDashboard 的颜色方案
+//   const colors = [
+//     {
+//       type: "linear",
+//       x: 0,
+//       y: 0,
+//       x2: 0,
+//       y2: 1,
+//       colorStops: [
+//         { offset: 0, color: "#ff4d4f" }, // 赤红色
+//         { offset: 1, color: "#a8071a" },
+//       ],
+//     },
+//     {
+//       type: "linear",
+//       x: 0,
+//       y: 0,
+//       x2: 0,
+//       y2: 1,
+//       colorStops: [
+//         { offset: 0, color: "#52c41a" }, // 成功绿色
+//         { offset: 1, color: "#389e0d" },
+//       ],
+//     },
+//     {
+//       type: "linear",
+//       x: 0,
+//       y: 0,
+//       x2: 0,
+//       y2: 1,
+//       colorStops: [
+//         { offset: 0, color: "#faad14" }, // 警告黄色
+//         { offset: 1, color: "#d48806" },
+//       ],
+//     },
+//   ];
 
-  customerChartRef.value &&
-    echarts.init(customerChartRef.value).setOption({
-      color: colors,
-      tooltip: { trigger: "axis", axisPointer: { type: "shadow" } },
-      legend: { data: products },
-      xAxis: { type: "category", data: customers },
-      yAxis: { type: "value", name: "退货数" },
-      series: products.map((prod, idx) => ({
-        name: prod,
-        type: "bar",
-        stack: "客户",
-        data: stack[idx],
-        itemStyle: { color: colors[idx] },
-      })),
-    });
-}
-// 部门选项数据（示例，可根据实际数据结构调整）
-const departmentOptions = ref(
-  (props.departmentData?.departments || defaultDepartment.departments).map(
-    (dep, index) => ({
-      title: dep,
-      value: index,
-      key: index,
-    })
-  )
-);
+//   customerChartRef.value &&
+//     echarts.init(customerChartRef.value).setOption({
+//       color: colors,
+//       tooltip: { trigger: "axis", axisPointer: { type: "shadow" } },
+//       legend: { data: products },
+//       xAxis: { type: "category", data: customers },
+//       yAxis: { type: "value", name: "退货数" },
+//       series: products.map((prod, idx) => ({
+//         name: prod,
+//         type: "bar",
+//         stack: "客户",
+//         data: stack[idx],
+//         itemStyle: { color: colors[idx] },
+//       })),
+//     });
+// }
+// // 部门选项数据（示例，可根据实际数据结构调整）
+// const departmentOptions = ref(
+//   (props.departmentData?.departments || defaultDepartment.departments).map(
+//     (dep, index) => ({
+//       title: dep,
+//       value: index,
+//       key: index,
+//     })
+//   )
+// );
 
 let monthlyChart: any = null;
 let departmentChart: any = null;
@@ -166,13 +232,14 @@ const renderMonthlyChart = () => {
     color: ["#1890ff", "#faad14"], // 与SatisfactionDashboard保持一致
     tooltip: { trigger: "axis", axisPointer: { type: "cross" } },
     legend: { data: ["退货数", "退货率"] },
-    xAxis: { type: "category", data: data.months },
+    xAxis: { type: "category", data: data.months, splitLine: { show: false } },
     yAxis: [
-      { type: "value", name: "退货数" },
+      { type: "value", name: "退货数", splitLine: { show: false } },
       {
         type: "value",
         name: "退货率",
         axisLabel: { formatter: "{value} %" },
+        splitLine: { show: false },
       },
     ],
     series: [
@@ -205,13 +272,18 @@ const renderDepartmentChart = () => {
     color: ["#52c41a", "#ff7a45"], // 绿色和橙色
     tooltip: { trigger: "axis" },
     legend: { data: ["退货数", "退货率"] },
-    xAxis: { type: "category", data: data.departments },
+    xAxis: {
+      type: "category",
+      data: data.departments,
+      splitLine: { show: false },
+    },
     yAxis: [
-      { type: "value", name: "退货数" },
+      { type: "value", name: "退货数", splitLine: { show: false } },
       {
         type: "value",
         name: "退货率",
         axisLabel: { formatter: "{value} %" },
+        splitLine: { show: false },
       },
     ],
     series: [
@@ -234,31 +306,90 @@ const renderDepartmentChart = () => {
 };
 
 // 客户图表也需要修改初始颜色
-const renderCustomerChart = () => {
-  const data = props.customerStackData || defaultCustomerStack;
-  // 匹配主面板颜色
+function renderCustomerChart() {
+  const dep = selectedDepartment.value;
+  const { customers, products } = departmentCustomerProductMap[dep];
+
+  // 为每个产品和客户造假数据
+  const stack = products.map(() =>
+    customers.map(() => Math.floor(Math.random() * 30 + 10))
+  );
+
+  // 配色方案
   const colors = [
-    "#ff4d4f", // 蓝色
-    "#52c41a", // 绿色
-    "#faad14", // 黄色/橙色
+    {
+      type: "linear",
+      x: 0,
+      y: 0,
+      x2: 0,
+      y2: 1,
+      colorStops: [
+        { offset: 0, color: "#1890ff" },
+        { offset: 1, color: "#096dd9" },
+      ],
+    },
+    {
+      type: "linear",
+      x: 0,
+      y: 0,
+      x2: 0,
+      y2: 1,
+      colorStops: [
+        { offset: 0, color: "#52c41a" },
+        { offset: 1, color: "#389e0d" },
+      ],
+    },
+    {
+      type: "linear",
+      x: 0,
+      y: 0,
+      x2: 0,
+      y2: 1,
+      colorStops: [
+        { offset: 0, color: "#faad14" },
+        { offset: 1, color: "#d48806" },
+      ],
+    },
+    {
+      type: "linear",
+      x: 0,
+      y: 0,
+      x2: 0,
+      y2: 1,
+      colorStops: [
+        { offset: 0, color: "#ff4d4f" },
+        { offset: 1, color: "#a8071a" },
+      ],
+    },
+    {
+      type: "linear",
+      x: 0,
+      y: 0,
+      x2: 0,
+      y2: 1,
+      colorStops: [
+        { offset: 0, color: "#13c2c2" },
+        { offset: 1, color: "#08979c" },
+      ],
+    },
   ];
-  if (!customerChartRef.value) return;
-  if (!customerChart) customerChart = echarts.init(customerChartRef.value);
-  customerChart.setOption({
-    color: colors,
-    tooltip: { trigger: "axis", axisPointer: { type: "shadow" } },
-    legend: { data: data.products },
-    xAxis: { type: "category", data: data.customers },
-    yAxis: { type: "value", name: "退货数" },
-    series: data.products.map((prod, idx) => ({
-      name: prod,
-      type: "bar",
-      stack: "客户",
-      data: data.stack[idx],
-      itemStyle: { color: colors[idx] },
-    })),
-  });
-};
+
+  customerChartRef.value &&
+    echarts.init(customerChartRef.value).setOption({
+      color: colors,
+      tooltip: { trigger: "axis", axisPointer: { type: "shadow" } },
+      legend: { data: products, show: false },
+      xAxis: { type: "category", data: customers, splitLine: { show: false } },
+      yAxis: { type: "value", name: "退货数", splitLine: { show: false } },
+      series: products.map((prod, idx) => ({
+        name: prod,
+        type: "bar",
+        stack: "客户",
+        data: stack[idx],
+        itemStyle: { color: colors[idx % colors.length] },
+      })),
+    });
+}
 watch(() => props.monthlyData, renderMonthlyChart, { deep: true });
 watch(() => props.departmentData, renderDepartmentChart, { deep: true });
 watch(() => props.customerStackData, renderCustomerChart, { deep: true });
