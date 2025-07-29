@@ -202,6 +202,29 @@
         </a-card>
       </a-col>
     </a-row>
+    <!-- 仪表盘标题 -->
+    <div
+      style="
+        margin: 24px 0 16px 0;
+        text-align: left;
+        display: flex;
+        align-items: center;
+      "
+    >
+      <span
+        style="
+          display: inline-block;
+          width: 6px;
+          height: 28px;
+          background: #1890ff;
+          border-radius: 3px;
+          margin-right: 12px;
+        "
+      ></span>
+      <h2 style="font-size: 22px; font-weight: 600; color: #222; margin: 0">
+        客户满意度与投诉分析仪表盘
+      </h2>
+    </div>
 
     <!-- 核心指标看板 -->
     <a-row :gutter="16" class="stats-row">
@@ -238,23 +261,49 @@
         </a-card>
       </a-col>
     </a-row>
-
+    <div
+      style="
+        margin: 24px 0 16px 0;
+        text-align: left;
+        display: flex;
+        align-items: center;
+      "
+    >
+      <span
+        style="
+          display: inline-block;
+          width: 6px;
+          height: 28px;
+          background: #1890ff;
+          border-radius: 3px;
+          margin-right: 12px;
+        "
+      ></span>
+      <h2 style="font-size: 22px; font-weight: 600; color: #222; margin: 0">
+        客户满意度与投诉分析仪表盘2
+      </h2>
+    </div>
     <!-- 客户满意度与投诉分析区 -->
     <a-row :gutter="16" class="chart-row">
+      <a-col :xs="24" :sm="24" :md="8" :lg="8">
+        <a-card class="chart-card" title="投诉等级分布">
+          <div ref="complaintLevelMonthlyChart" style="height: 320px"></div>
+        </a-card>
+      </a-col>
       <a-col :span="8">
-        <a-card class="chart-card" title="月度投诉趋势">
-          <div
+        <a-card class="chart-card" title="各事业部投诉数据">
+          <!-- <div
             class="complaint-header"
             style="display: flex; justify-content: flex-end"
-          >
-            <a-range-picker
+          > -->
+            <!-- <a-range-picker
               v-model:value="monthtrend"
               format="YYYY-MM"
               :placeholder="['开始月份', '结束月份']"
               picker="month"
-            />
-          </div>
-          <div ref="miniComplaintTrendChart" style="height: 250px"></div>
+            /> -->
+          <!-- </div> -->
+          <div ref="miniComplaintTrendChart" style="height: 350px"></div>
         </a-card>
       </a-col>
       <a-col :span="8">
@@ -309,13 +358,29 @@
           <div ref="complaintLevelChart" style="height: 250px"></div>
         </a-card>
       </a-col>
-      <a-col :xs="24" :sm="24" :md="8" :lg="8">
-        <a-card class="chart-card" title="投诉等级分布">
-          <div ref="complaintLevelMonthlyChart" style="height: 320px"></div>
-        </a-card>
-      </a-col>
     </a-row>
-
+    <div
+      style="
+        margin: 24px 0 16px 0;
+        text-align: left;
+        display: flex;
+        align-items: center;
+      "
+    >
+      <span
+        style="
+          display: inline-block;
+          width: 6px;
+          height: 28px;
+          background: #1890ff;
+          border-radius: 3px;
+          margin-right: 12px;
+        "
+      ></span>
+      <h2 style="font-size: 22px; font-weight: 600; color: #222; margin: 0">
+        客户满意度与投诉分析仪表盘3
+      </h2>
+    </div>
     <!-- 退货数据统计区 -->
     <ReturnsStatistics
       :department-data="{
@@ -681,84 +746,55 @@ const getDepartmentName = (deptId: string): string => {
 const initCharts = () => {
   if (miniComplaintTrendChart.value) {
     const chart = echarts.init(miniComplaintTrendChart.value);
-    const months = [
-      "2023-12",
-      "2024-01",
-      "2024-02",
-      "2024-03",
-      "2024-04",
-      "2024-05",
-    ];
-    const complaints = [42, 38, 45, 40, 36, 35];
 
-    // 计算环比变化
-    const changes = [null];
-    for (let i = 1; i < complaints.length; i++) {
-      const change = (
-        ((complaints[i] - complaints[i - 1]) / complaints[i - 1]) *
-        100
-      ).toFixed(1);
-      changes.push(parseFloat(change));
-    }
+    // 使用部门列表作为横坐标
+    const departments = departmentList;
+
+    // 为每个部门生成模拟的投诉数据
+    const complaintsByDept = departments.map(() =>
+      Math.floor(Math.random() * 30 + 20)
+    );
 
     chart.setOption({
-      tooltip: {
-        trigger: "axis",
-        axisPointer: { type: "shadow" },
-      },
+      color: ["#52c41a"], // 与departmentChart保持一致的绿色
+      tooltip: { trigger: "axis" },
+      legend: { data: ["投诉数量"] },
       grid: {
         top: "15%",
         left: "3%",
         right: "3%",
-        bottom: "10%",
+        bottom: "18%", // 增加底部边距，为旋转的标签留出空间
         containLabel: true,
       },
       xAxis: {
         type: "category",
-        data: months,
+        data: departments,
+        splitLine: { show: false },
         axisLine: { lineStyle: { color: "#f0f0f0" } },
-        axisLabel: { fontSize: 10 },
-      },
-      yAxis: [
-        {
-          type: "value",
-          name: "投诉数",
-          nameTextStyle: { fontSize: 10 },
-          axisLabel: { fontSize: 10 },
-          splitLine: { lineStyle: { type: "dashed" } },
-        },
-        {
-          type: "value",
-          name: "环比",
-          nameTextStyle: { fontSize: 10 },
-          axisLabel: {
-            fontSize: 10,
-            formatter: "{value}%",
+        axisLabel: {
+          fontSize: 10,
+          rotate: 30, // 标签旋转角度
+          interval: 0, // 强制显示所有标签
+          formatter: function (value) {
+            // 对较长的标签进行处理
+            return value.length > 8 ? value.substring(0, 8) + "..." : value;
           },
-          splitLine: { show: false },
         },
-      ],
+      },
+      yAxis: {
+        type: "value",
+        name: "投诉数",
+        nameTextStyle: { fontSize: 10 },
+        axisLabel: { fontSize: 10 },
+        splitLine: { show: false },
+      },
       series: [
         {
           name: "投诉数量",
           type: "bar",
-          data: complaints,
+          data: complaintsByDept,
           barWidth: "40%",
-          itemStyle: { color: "#faad14" },
-        },
-        {
-          name: "环比变化",
-          type: "line",
-          yAxisIndex: 1,
-          data: changes,
-          symbol: "circle",
-          symbolSize: 6,
-          lineStyle: { width: 2 },
-          itemStyle: {
-            color: function (params) {
-              return params.value >= 0 ? "#cf1322" : "#52c41a";
-            },
-          },
+          itemStyle: { color: "#52c41a" }, // 绿色，与departmentChart保持一致
         },
       ],
     });
@@ -1095,9 +1131,23 @@ const initCharts = () => {
   // 投诉等级月度分布
   if (complaintLevelMonthlyChart.value) {
     const chart = echarts.init(complaintLevelMonthlyChart.value);
+    // 各级别投诉数据
+    const aLevelData = [8, 10, 9, 6, 7, 5];
+    const bLevelData = [12, 14, 13, 10, 12, 8];
+    const cLevelData = [15, 16, 15, 12, 13, 12];
+    const dLevelData = [7, 8, 9, 8, 7, 8];
+    const eLevelData = [3, 4, 3, 2, 3, 2];
+    const totalData = aLevelData.map(
+      (val, index) =>
+        val +
+        bLevelData[index] +
+        cLevelData[index] +
+        dLevelData[index] +
+        eLevelData[index]
+    );
     chart.setOption({
       tooltip: { trigger: "axis", axisPointer: { type: "shadow" } },
-      legend: { data: ["A级", "B级", "C级", "D级", "E级"] },
+      legend: { data: ["A级", "B级", "C级", "D级", "E级", "总投诉数"] },
       xAxis: {
         type: "category",
         data: [
@@ -1109,43 +1159,61 @@ const initCharts = () => {
           "2023-10",
         ],
       },
-      yAxis: { type: "value" },
+      yAxis: [
+        { type: "value", name: "投诉数量" },
+        {
+          type: "value",
+          name: "总量",
+          axisLine: { show: true },
+          splitLine: { show: false },
+        },
+      ],
       series: [
         {
           name: "A级",
           type: "bar",
           stack: "总量",
           itemStyle: { color: "#ff4d4f" },
-          data: [8, 10, 9, 6, 7, 5],
+          data: aLevelData,
         },
         {
           name: "B级",
           type: "bar",
           stack: "总量",
           itemStyle: { color: "#ff7a45" },
-          data: [12, 14, 13, 10, 12, 8],
+          data: bLevelData,
         },
         {
           name: "C级",
           type: "bar",
           stack: "总量",
           itemStyle: { color: "#faad14" },
-          data: [15, 16, 15, 12, 13, 12],
+          data: cLevelData,
         },
         {
           name: "D级",
           type: "bar",
           stack: "总量",
           itemStyle: { color: "#52c41a" },
-          data: [7, 8, 9, 8, 7, 8],
+          data: dLevelData,
         },
         {
           name: "E级",
           type: "bar",
           stack: "总量",
           itemStyle: { color: "#a0d911" },
-
-          data: [3, 4, 3, 2, 3, 2],
+          data: eLevelData,
+        },
+        // 新增折线图显示总投诉数
+        {
+          name: "总投诉数",
+          type: "line",
+          yAxisIndex: 1,
+          symbolSize: 8,
+          lineStyle: { width: 3, color: "#1890ff" },
+          itemStyle: { color: "#1890ff" },
+          data: totalData,
+          z: 5,
         },
       ],
     });

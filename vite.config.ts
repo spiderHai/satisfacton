@@ -12,7 +12,7 @@ export default defineConfig({
     Components({
       resolvers: [
         AntDesignVueResolver({
-          importStyle: false, // 不自动导入样式
+          importStyle: false,       // 不自动导入样式
         }),
       ],
     }),

@@ -145,84 +145,8 @@ const monthlyChartRef = ref();
 const departmentChartRef = ref();
 const customerChartRef = ref();
 
-// const selectedDepartment = ref<string | undefined>("车载镜头-南昌");
-
-// function handleFilter(value: string | undefined) {
-//   selectedDepartment.value = value;
-
-//   let customers = ["客户A", "客户B", "客户C", "客户D"];
-//   let products = ["产品A", "产品B", "产品C"];
-//   let stack = products.map(() =>
-//     customers.map(() => Math.floor(Math.random() * 30 + 10))
-//   );
-
-//   // 匹配 SatisfactionDashboard 的颜色方案
-//   const colors = [
-//     {
-//       type: "linear",
-//       x: 0,
-//       y: 0,
-//       x2: 0,
-//       y2: 1,
-//       colorStops: [
-//         { offset: 0, color: "#ff4d4f" }, // 赤红色
-//         { offset: 1, color: "#a8071a" },
-//       ],
-//     },
-//     {
-//       type: "linear",
-//       x: 0,
-//       y: 0,
-//       x2: 0,
-//       y2: 1,
-//       colorStops: [
-//         { offset: 0, color: "#52c41a" }, // 成功绿色
-//         { offset: 1, color: "#389e0d" },
-//       ],
-//     },
-//     {
-//       type: "linear",
-//       x: 0,
-//       y: 0,
-//       x2: 0,
-//       y2: 1,
-//       colorStops: [
-//         { offset: 0, color: "#faad14" }, // 警告黄色
-//         { offset: 1, color: "#d48806" },
-//       ],
-//     },
-//   ];
-
-//   customerChartRef.value &&
-//     echarts.init(customerChartRef.value).setOption({
-//       color: colors,
-//       tooltip: { trigger: "axis", axisPointer: { type: "shadow" } },
-//       legend: { data: products },
-//       xAxis: { type: "category", data: customers },
-//       yAxis: { type: "value", name: "退货数" },
-//       series: products.map((prod, idx) => ({
-//         name: prod,
-//         type: "bar",
-//         stack: "客户",
-//         data: stack[idx],
-//         itemStyle: { color: colors[idx] },
-//       })),
-//     });
-// }
-// // 部门选项数据（示例，可根据实际数据结构调整）
-// const departmentOptions = ref(
-//   (props.departmentData?.departments || defaultDepartment.departments).map(
-//     (dep, index) => ({
-//       title: dep,
-//       value: index,
-//       key: index,
-//     })
-//   )
-// );
-
 let monthlyChart: any = null;
 let departmentChart: any = null;
-let customerChart: any = null;
 
 const renderMonthlyChart = () => {
   const data = props.monthlyData || defaultMonthly;
@@ -264,6 +188,8 @@ const renderMonthlyChart = () => {
 
 // 调整部门图表颜色
 const renderDepartmentChart = () => {
+  // 横坐标标签斜着排列
+  // axisLabel: { rotate: 30 } 可调整角度
   const data = props.departmentData || defaultDepartment;
   if (!departmentChartRef.value) return;
   if (!departmentChart)
@@ -276,13 +202,14 @@ const renderDepartmentChart = () => {
       type: "category",
       data: data.departments,
       splitLine: { show: false },
+      axisLabel: { rotate: 30 },
     },
     yAxis: [
       { type: "value", name: "退货数", splitLine: { show: false } },
       {
         type: "value",
         name: "退货率",
-        axisLabel: { formatter: "{value} %" },
+        axisLabel: { formatter: "{value} %", rotate: 30 },
         splitLine: { show: false },
       },
     ],
